@@ -185,10 +185,10 @@ namespace io {
                        "[ .''''|.   .x.   ||      '||||      | 'M' ||    \\  ||    ||]"
                        "[.|.  .||..|  ||..||.|'...|S.||....|.|. | .||.    3' D|...|' ]"
                        "[.............................................   //          ]"
-                       "[                                               /'     v x.y ]"
+                       "[                                               /' v x.yyyyy ]"
                        "[                                                            ]"
-                       "[Copyright (c) 2019 Kuangdai Leng & friends, MIT License     ]"
-                       "[Source, docs and issues: github.com/kuangdai/AxiSEM-3D      ]"
+                       "[Copyright (c) 2026 AxiSEM3D developers, MIT License         ]"
+                       "[Source, docs, and issues: github.com/AxiSEMunity/AxiSEM3D   ]"
                        "{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}\n\n";
 
     std::string space = filled((fmt::gBoxWidth - 60) / 2);
@@ -197,7 +197,7 @@ namespace io {
     welc = replace(welc, "}", tilde + "\n");
     welc = replace(welc, "[", space);
     welc = replace(welc, "]", space + "\n");
-    welc = replace(welc, "x.y", _VERSION);
+    welc = replace(welc, "x.yyyyy", _VERSION);
     return replace(welc, "\\", "\\\\");
   }
 
