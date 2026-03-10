@@ -189,7 +189,7 @@ wavefield_scanning:
 
         # what: perform scanning only on vertex GLL points
         # type: bool
-        # note: vertex-only scanninng can significantly decrease both
+        # note: vertex-only scanning can significantly decrease both
         #       runtime memory and output file size
         vertex_only: true
 
