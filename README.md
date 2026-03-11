@@ -1,4 +1,4 @@
-[![License MIT](https://img.shields.io/badge/License-MIT%202%2B-red)](https://github.com/AxiSEMunity/AxiSEM3D/blob/main/LICENSE)
+[![License MIT](https://img.shields.io/badge/License-MIT-red)](https://github.com/AxiSEMunity/AxiSEM3D/blob/main/LICENSE)
 [![CI Status](https://github.com/tjhei/AxiSEM3D/actions/workflows/linux.yml/badge.svg)](https://github.com/tjhei/AxiSEM3D/actions/workflows/linux.yml)
 [![Docs](https://app.readthedocs.org/projects/axisem3d/badge/)](https://axisem3d.readthedocs.io/)
 
