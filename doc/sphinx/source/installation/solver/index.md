@@ -21,7 +21,7 @@ AxiSEM3D depends on the following external libraries.
 | [Eigen](http://eigen.tuxfamily.org/) | Linear algebra | **>= 3.4.0 (strict)** | Current stable release is 3.4 (Mar 2022). |
 | [Boost](https://www.boost.org/) | C++ helper utilities | **>= 1.85.0 (strict)** | Only header-only modules are used. |
 | [FFTW](http://www.fftw.org/) | Fast Fourier transform | >= 3.3.8 | Version is not sensitive in practice. |
-| [METIS](http://glaros.dtc.umn.edu/gkhome/metis/metis/overview) | Mesh partitioning | >= 5.1.0 | Version is not sensitive; 32/64-bit builds acceptable. |
+| [METIS](https://github.com/KarypisLab/METIS) | Mesh partitioning | >= 5.1.0 | Version is not sensitive; 32/64-bit builds acceptable. |
 | [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) | Multi-dimensional I/O | >= 4.4.1 | Parallel NetCDF supported but optional. |
 | [HDF5](https://www.hdfgroup.org/solutions/hdf5/) | Hierarchical data support | Optional | Only required if NetCDF is built with HDF5. |
 
