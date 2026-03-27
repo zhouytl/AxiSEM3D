@@ -2,7 +2,7 @@
 
 Example input files and post-processing scripts can be found in two places:  
  * ```examples/``` folder in the main repository provide example problems that are good starting points or "cookbooks" for more complex models.
- * [AxiSEM3D Gallery](https://github.com/AxiSEMunity) is a repository for published models.
+ * [AxiSEM3D Example Gallery](https://github.com/AxiSEMunity/AxiSEM3D_example_gallery) is a repository for published models.
 
  ## Contributing examples
  AxiSEM3D has a number of examples that illustrate how to use certain features of the code. If you have a model setup that illustrates a feature or a certain type of model, please share! We are happy to add new examples to help AxiSEM3D community.
