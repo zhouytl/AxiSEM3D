@@ -53,7 +53,7 @@ list_of_sources:
 
 The key that you use, e.g., `VIRGINIA_201108231751A` is arbitrary. We normally use the CMT Catalogue designator for the earthquake in question.
 
-We recommend sticking sticking to specifying the location using `latitude_longitude`, remembering that the north and east is positive and `depth` is in metres – this is important!
+We recommend sticking to specifying the location using `latitude_longitude`, remembering that north and east are positive and `depth` is in metres – this is important!
 
 The `ellipticity` correction is easy to change and makes little difference unless you need very exact arrival times.
 
@@ -62,8 +62,8 @@ We will come back to `depth_below_solid_surface` and
 
 You are most likely to use the `mechanism: type: MOMENT_TENSOR`, in which case you should input the `data` as the components of the moment tensor in the order given by CMTSOLUTION. Remember that CMT uses the non-SI unit of dyne-cm, so you need to add a correction factor by setting `unit` to `1e-7` to turn this into N-m.
 
-For most purposes (seismogram generation) you can do everything involving the `source-time function` (STF) after the simulation is complete in post-processing. In this case, set `half_duration` to `0.0` and the code will make the width of the STF something like 5x the timestep (much less
-than the mesh period, i.e. a delta function). Note that in a model like this this is as good as you are going to get – the half-duration cannot be exactly 0.00000, but the difference is miniscule and irrelevant.
+For most purposes (seismogram generation), you can do everything involving the `source-time function` (STF) after the simulation is complete in post-processing. In this case, set `half_duration` to `0.0` and the code will make the width of the STF something like 5x's the timestep (much less
+than the mesh period, i.e. a delta function). Note that in a model like this, this is as good as you are going to get – the half-duration cannot be exactly 0.00000, but the difference is miniscule and irrelevant.
 
 Leave `class_name` as `GaussianSTF` and `use_derivative_integral` as either `ERF` or `GAUSSIAN` depending on whether you want displacement or velocity output. We will come back to how to process the output in a later section.
 

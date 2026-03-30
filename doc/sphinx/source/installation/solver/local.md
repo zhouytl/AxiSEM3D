@@ -73,7 +73,7 @@ Nex remove everything in the build folder and tell cmake that each of
 the dependencies can be found at the CONDA_PREFIX.
 
 ```bash
-rm -rf build && cmake -S ./SOLVER -B build \
+rm -rf build && cmake -B build \
   -Dcxx=mpicxx \
   -Dhdf5=$CONDA_PREFIX \
   -Dnetcdf=$CONDA_PREFIX \
