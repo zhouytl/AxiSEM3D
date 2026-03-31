@@ -71,7 +71,7 @@ namespace vicinity {
     using namespace constants;
 
     // get neighbours from metis
-    metis::formNeighbourhood(connectivity, 1, neighbours);
+    axisem3d::metis::formNeighbourhood(connectivity, 1, neighbours);
 
     // init element-GLL vicinity
     int nelem = (int)connectivity.rows();

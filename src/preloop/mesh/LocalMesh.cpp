@@ -57,7 +57,7 @@ void
 LocalMesh::decomposeExodusMesh(
     const ExodusMesh& exodusMesh, const eigen::DColX& weights, eigen::IColX& elemRank) {
   // metis
-  double obj = metis::decompose(exodusMesh.getConnectivity(),
+  double obj = axisem3d::metis::decompose(exodusMesh.getConnectivity(),
       exodusMesh.getIsElementFluid(),
       weights,
       mpi::nprocWorld(),

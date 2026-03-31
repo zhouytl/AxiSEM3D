@@ -19,7 +19,7 @@ namespace eigen {
   typedef Eigen::Matrix<idx_t, Eigen::Dynamic, 1> IIColX;
 } // namespace eigen
 
-namespace metis {
+namespace axisem3d::metis {
   /////////////////////// internal functions ///////////////////////
   // error handler
   void
@@ -194,4 +194,4 @@ namespace metis {
     elemRank = erank.cast<int>();
     return objval * 1.;
   }
-} // namespace metis
+} // namespace axisem3d::metis
