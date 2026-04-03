@@ -117,7 +117,7 @@ namespace io {
       // check output
       if (dirExists(gOutputDirectory)) {
         // backup the old
-        const std::string& backup = gOutputDirectory + "__backup@" + bstring::currentDateTime();
+        const std::string& backup = gOutputDirectory + "__backup_at_" + bstring::currentDateTime();
         ::rename(gOutputDirectory.c_str(), backup.c_str());
         // warning
         warning = bstring::warning("io::verifyDirectories || "
