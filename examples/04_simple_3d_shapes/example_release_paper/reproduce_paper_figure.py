@@ -1,3 +1,6 @@
+# Plots figure used in release paper. Make sure to have copied dir
+#   AxiSEM3D/build/output/stations 
+# to this directory, or modify the relative path 
 import numpy as np
 import obspy
 from obspy.core.trace import Trace
@@ -18,7 +21,7 @@ def obspy_gen_mpl(tr):
 
 # Input parameters and paths:
 save_figs_as_pdf = True         # Either saves as PDF of plt.show() to screen
-ddir = './datas/station_1'      # Path to data Station_1 directory from simulation
+ddir = './stations/station_1'      # Path to data Station_1 directory from simulation
 odir = './Figures/'             # Path to output plots
 net = 'YY'                      # Network label
 nstns = 15                      # Number of stations on each azimuth
@@ -26,7 +29,7 @@ nstns = 15                      # Number of stations on each azimuth
 norm_traces = True              # Normalise record section trace amplitudes
 
 # Filter frequencies
-fmin = 1                      # Minimum frequency in Hz
+fmin = 1                        # Minimum frequency in Hz
 fmax = 7.5                      # Maximum frequency in Hz
 
 # Load hex codes for a sequential, colour-blind-safe colour scheme
@@ -37,7 +40,10 @@ hex = Iridescent()
 arr_time = ((np.arange(1,16)*2000)**2 + 7500**2)**0.5 / 1500
 
 # Load time data only once -- shared by all time-series
-time = np.loadtxt(f"{ddir}/data_time.ascii")
+try: 
+    time = np.loadtxt(f"{ddir}/data_time.ascii")
+except: 
+    raise ValueError(f"Couldnt load {ddir}/data_time.ascii. Have you copied/moved AxiSEM3D/build/output/stations to this directory? ")
 # Timestep
 dt = np.mean(time[1:] - time[:-1])
 
@@ -51,6 +57,7 @@ rec_axwid = 0.35
 rec_axhei = 0.3
 z_hei = rec_axhei-0.1
 z_wid = rec_axwid - 0.1
+
 # Creating two axes
 # add_axes([xmin,ymin,dx,dy])
 ax_bl = fig.add_axes([0,0,rec_axwid,rec_axhei])

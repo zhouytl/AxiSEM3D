@@ -116,7 +116,7 @@ class Injector():
     def _centre_create(self, mfp, x_lim, y_lim, z_lim):
 
         if len(mfp) == 1:
-            mfpx = mfpy = mfpz = mfp
+            mfpx = mfpy = mfpz = mfp[0]
         elif len(mfp) == 3:
             mfpx = mfp[0]
             mfpy = mfp[1]

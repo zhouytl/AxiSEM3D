@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e  # 
+
+# Installation on Princeton's Tiger cluster
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+AXISEM_DIR=/scratch/gpfs/TROMP/we3822/AxiSEM3D
+DEP=$AXISEM_DIR/dependencies
+
+# ── Modules ────────────────────────────────────────────────────────────────────
+module purge
+module load intel-oneapi/2024.2
+module load intel-mpi/oneapi/2021.13
+module load boost/1.85.0
+module load hdf5/oneapi-2024.2/intel-mpi/1.14.4
+module load netcdf/oneapi-2024.2/hdf5-1.14.4/intel-mpi/4.9.2
+module load fftw/oneapi-2024.2/intel-mpi/3.3.10
+
+
+# ── Environment variables ──────────────────────────────────────────────────────
+export NETCDF_ROOT=$NETCDFDIR
+export HDF5_ROOT=/usr/local/hdf5/oneapi-2024.2/intel-mpi/1.14.4
+export BOOST_ROOT=/usr/local/boost/1.85.0
+export FFTW_ROOT=/usr/local/fftw/oneapi-2024.2/intel-mpi/3.3.10
+
+
+export EIGEN3_ROOT=$DEP/eigen-5.0.0
+export METIS_ROOT=$DEP/METIS/install
+
+# ── Compilers ──────────────────────────────────────────────────────────────────
+export CXX=mpicxx
+export CC=mpicc
+
+# ── Dependencies not on cluster ────────────────────────────────────────────────
+mkdir -p $DEP
+cd $DEP
+
+# Eigen (header-only, no build needed)
+if [ ! -d eigen-5.0.0 ]; then
+    wget https://gitlab.com/libeigen/eigen/-/archive/5.0.0/eigen-5.0.0.tar.gz
+    tar -xzf eigen-5.0.0.tar.gz
+    rm eigen-5.0.0.tar.gz
+fi
+
+# METIS
+wget https://karypis.github.io/glaros/files/sw/metis/metis-5.1.0.tar.gz
+tar -xvf metis-5.1.0.tar.gz
+mv metis-5.1.0 METIS
+cd METIS 
+make config prefix=$PWD/install
+make install
+
+
+MPI_BIN=/opt/intel/oneapi/mpi/2021.13/bin
+
+
+cd $AXISEM_DIR
+
+# ── Configure the build ──────────────────────────────────────────────────────────────────
+MPI_BIN=/opt/intel/oneapi/mpi/2021.13/bin
+
+rm -rf build && cmake -B build \
+  -DCMAKE_CXX_COMPILER=$MPI_BIN/mpicxx \
+  -DCMAKE_C_COMPILER=$MPI_BIN/mpicc \
+  -Dcxx=$MPI_BIN/mpicxx \
+  -Dhdf5=$HDF5_ROOT \
+  -Dnetcdf=$NETCDF_ROOT \
+  -Deigen=$EIGEN3_ROOT \
+  -Dboost=$BOOST_ROOT \
+  -Dmetis=$METIS_ROOT \
+  -Dfftw=$FFTW_ROOT \
+  -DFFTW_ROOT=$FFTW_ROOT
+
+# Compile
+cmake --build build -j4
+
+
+# Check
+./build/axisem3d --help
