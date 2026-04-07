@@ -43,6 +43,11 @@ jobs:
       - name: Check executable
         run: ./build/axisem3d --help
 
+      - name: Run tests
+        run: |
+          source $CONDA/etc/profile.d/conda.sh && conda activate axisem3d
+          cd build && ctest -j2 --output-on-failure
+
       - name: Indent
         run: |
           source $CONDA/etc/profile.d/conda.sh && conda activate axisem3d
