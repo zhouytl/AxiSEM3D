@@ -89,6 +89,7 @@ setDefault(USE_DOUBLE                  OFF)
 # project
 cmake_minimum_required(VERSION 3.26)
 project(AxiSEM3D)
+include(CTest)
 
 # use "Release" as the default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -268,14 +269,81 @@ if(NOT "${ADDITIONAL_LINK_OPTIONS}" STREQUAL "")
   target_link_options(axisem3d PRIVATE ${_A3D_USER_LINK_OPTIONS})
 endif()
 
-
-
 # target to run tools/indent.sh (clang-format) from project root
 add_custom_target(indent
   COMMAND sh "${CMAKE_SOURCE_DIR}/tools/indent.sh"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Indenting source with clang-format (tools/indent.sh)"
 )
+
+
+# Integration tests
+if(EXISTS "${PROJECT_SOURCE_DIR}/tests")
+  find_program(NUMDIFF_EXECUTABLE numdiff REQUIRED)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
+  message(STATUS "Searching for tests in ${PROJECT_SOURCE_DIR}/tests:")
+  file(GLOB _tests RELATIVE "" "${PROJECT_SOURCE_DIR}/tests/*/config.txt")
+
+  set(_n_tests "0")
+  list(SORT _tests)
+
+  foreach(_test ${_tests})
+    string(REPLACE "/config.txt" "" _testfolder ${_test})
+    get_filename_component(_testname ${_testfolder} NAME)
+
+    message(STATUS "  Test ${_testname}, folder: ${_testfolder}")
+
+    if(NOT IS_DIRECTORY "${_testfolder}/input" OR
+      NOT EXISTS "${_testfolder}/screen-output")
+      message(STATUS "    Skipping integration test case '${_testname}': missing input/ or screen-output")
+      continue()
+    endif()
+
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname})
+
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output
+      COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/runs
+      COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output
+      COMMAND echo mpirun -np 2 ${CMAKE_BINARY_DIR}/axisem3d --input ${_testfolder}/input --output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output
+      COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/axisem3d --input ${_testfolder}/input --output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output 2>&1 | tee ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/raw-screen-output
+      COMMAND ${CMAKE_SOURCE_DIR}/cmake/normalize_screen_output.sh ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/raw-screen-output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output
+      COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/runs
+      DEPENDS axisem3d ${_test} ${CMAKE_SOURCE_DIR}/CMakeLists.txt
+    )
+
+    add_custom_target(tests.${_testname}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output)
+
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output.diff
+    COMMAND test -f ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/runs
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/diff_test.sh
+            ${NUMDIFF_EXECUTABLE}
+            ${_testfolder}/screen-output
+            ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output
+    DEPENDS ${_testfolder}/screen-output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output)
+    add_custom_target(tests.${_testname}.screen-output.diff
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output.diff)
+
+    add_dependencies(tests.${_testname} tests.${_testname}.screen-output.diff)
+    
+    add_test(NAME ${_testname}
+    COMMAND ${CMAKE_COMMAND}
+            -DBINARY_DIR=${CMAKE_BINARY_DIR}
+            -DTESTNAME=tests.${_testname}
+            -DERROR="Test ${_testname} failed"
+            -P ${CMAKE_SOURCE_DIR}/cmake/run_test.cmake
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    set_tests_properties(${_testname} PROPERTIES TIMEOUT 600)
+
+    math(EXPR _n_tests "${_n_tests}+1")
+  endforeach()
+
+  message(STATUS "Found ${_n_tests} tests.")
+  message(STATUS "")
+endif()
+
 
 
 ################# summary #################

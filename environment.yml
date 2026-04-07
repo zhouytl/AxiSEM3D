@@ -6,6 +6,7 @@ dependencies:
 
   # Build system
   - cmake=4.2.3
+  - numdiff
 
   # Compiler toolchain (required for mpicxx to work on macOS arm64)
   - compilers

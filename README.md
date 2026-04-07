@@ -48,4 +48,10 @@ Check the executable:
 ./build/axisem3d --help
 ```
 
+Run integration tests:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
 For installation on HPC clusters, please refer to the user guide and `tools/installation_scripts`.
