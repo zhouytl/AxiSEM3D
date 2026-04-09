@@ -13,12 +13,13 @@ build:
 # Build documentation in the root directory with Sphinx
 sphinx:
   configuration: ./doc/sphinx/source/conf.py
-  fail_on_warning: false
+  fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-formats:
-  - htmlzip
-  - pdf
+# TODO: the following formats currently do not build without errors-
+#formats:
+#  - htmlzip
+#  - pdf
 
 conda:
   environment: ./doc/sphinx/environment.yml
