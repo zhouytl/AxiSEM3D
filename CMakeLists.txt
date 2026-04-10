@@ -280,8 +280,12 @@ add_custom_target(indent
 
 
 # Integration tests
-if(EXISTS "${PROJECT_SOURCE_DIR}/tests")
-  find_program(NUMDIFF_EXECUTABLE numdiff REQUIRED)
+find_program(NUMDIFF_EXECUTABLE numdiff QUIET)
+if(NOT NUMDIFF_EXECUTABLE)
+  message(STATUS "numdiff not found, skipping integration tests. See README.md for installation instructions.")
+endif()
+
+if(NUMDIFF_EXECUTABLE AND EXISTS "${PROJECT_SOURCE_DIR}/tests")
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
 
   message(STATUS "Searching for tests in ${PROJECT_SOURCE_DIR}/tests:")

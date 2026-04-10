@@ -48,7 +48,20 @@ Check the executable:
 ./build/axisem3d --help
 ```
 
-Run integration tests:
+## Integration tests
+
+AxiSEM3D comes with a testsuite of integration tests that run specific configurations specified in ``./tests/`` and compare them to reference data. For this, the tools ``numdiff`` is needed.
+
+On x86 machines you can add it to your conda environment using
+```bash
+conda install -n axisem3d conda-forge::numdiff
+```
+but this package currently does not exist for ARM (Apple machines). You can use homebrew instead:
+```bash
+brew install numdiff
+```
+
+To run the integration tests:
 
 ```bash
 ctest --test-dir build --output-on-failure
