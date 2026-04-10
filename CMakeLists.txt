@@ -320,7 +320,7 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/tests")
       COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/runs
       COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output
       COMMAND echo mpirun -np ${_n_mpi_ranks} ${CMAKE_BINARY_DIR}/axisem3d --input ${_testfolder}/input --output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output
-      COMMAND mpirun -np ${_n_mpi_ranks} ${CMAKE_BINARY_DIR}/axisem3d --input ${_testfolder}/input --output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output 2>&1 | tee ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/raw-screen-output
+      COMMAND OMP_NUM_THREADS=1 mpirun -np ${_n_mpi_ranks} ${CMAKE_BINARY_DIR}/axisem3d --input ${_testfolder}/input --output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output 2>&1 | tee ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/raw-screen-output
       COMMAND ${CMAKE_SOURCE_DIR}/cmake/normalize_screen_output.sh ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/raw-screen-output ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output
       COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/runs
       DEPENDS axisem3d ${_test} ${CMAKE_SOURCE_DIR}/CMakeLists.txt
