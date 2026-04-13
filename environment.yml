@@ -27,3 +27,8 @@ dependencies:
 
   # code formatting using clang-format:
   - clang-format=21.1
+
+  # Mesher:
+  - pip
+  - pip:
+    - git+https://github.com/AxiSEMunity/salvus_mesh_lite.git
