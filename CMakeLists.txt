@@ -345,6 +345,27 @@ if(NUMDIFF_EXECUTABLE AND EXISTS "${PROJECT_SOURCE_DIR}/tests")
 
     add_dependencies(tests.${_testname} tests.${_testname}.screen-output.diff)
     
+    # find all files under reference/; paths are relative to reference/
+    file(GLOB_RECURSE _reference_files
+         RELATIVE "${_testfolder}/reference"
+         "${_testfolder}/reference/*")
+    # For each reference file, create a comand to compare against output file
+    foreach(_reference_file ${_reference_files})
+      message(STATUS "    Reference file: ${_reference_file}")
+      # name without slashes:
+      string(REPLACE "/" "_" _nice_name ${_reference_file})
+
+      add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/${_nice_name}.diff
+      COMMAND ${CMAKE_SOURCE_DIR}/cmake/diff_test.sh
+              ${NUMDIFF_EXECUTABLE}
+              ${_testfolder}/reference/${_reference_file}
+              ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/output/${_reference_file}
+      DEPENDS ${_testfolder}/reference/${_reference_file} ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/screen-output)
+      add_custom_target(tests.${_testname}.${_nice_name}.diff
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tests/${_testname}/${_nice_name}.diff)
+      add_dependencies(tests.${_testname} tests.${_testname}.${_nice_name}.diff)
+    endforeach()
+
     add_test(NAME ${_testname}
     COMMAND ${CMAKE_COMMAND}
             -DBINARY_DIR=${CMAKE_BINARY_DIR}
