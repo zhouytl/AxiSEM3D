@@ -26,6 +26,7 @@ jobs:
       - name: Configure
         run: |
           source $CONDA/etc/profile.d/conda.sh && conda activate axisem3d
+          conda install -n axisem3d conda-forge::numdiff
           cmake -B build \
             -Dcxx=mpicxx \
             -Dhdf5=$CONDA_PREFIX \
