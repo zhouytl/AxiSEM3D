@@ -1,6 +1,5 @@
-
 # 02 - 3D Crust S362ANI (Regional)
----
+
 To generate mesh (already done in the input folders): 
 - vertical range: CMB to surface
 - horizontal range: 60 degrees away from the source
