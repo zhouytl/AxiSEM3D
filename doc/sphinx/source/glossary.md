@@ -8,7 +8,7 @@
   physics is confined to within a single plane (‘2D slice’) of the
   planet. What this means is that any 2D slice through the Earth is
   identical to all the others. Note that in a 2.5D method, any structure
-  must wrap all the way around the axis: e.g., a highvelocity circular
+  must wrap all the way around the axis: e.g., a high velocity circular
   province in the 2D plane will become a torus in the 2.5D version.
 
  **AxiSEM:** The AxiSymmetric Spectral Element Method: the 2.5D
@@ -24,7 +24,7 @@
  **Green’s Function:** In this case, the response of the simulation
   domain to a near impulsive (quasi delta function) source. Note that we
   say near impulsive because in a computational method of this type the
-  source must have some width (here, a few timesteps). In general this
+  source must have some width (here, a few time steps). In general this
   is so much less than the seismic period that it is close enough to a
   delta function for most purposes.
 

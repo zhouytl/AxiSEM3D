@@ -1,13 +1,13 @@
 # Example Installations on HPC Systems
-This page provides details of our experience compiling AxiSEM-3D on a number of high
+This page provides details of our experience compiling AxiSEM3D on a number of high
 performance computing facilities. This is often an interesting experience and, because
-the systems and AxiSEM-3D are both evolving there is no guarantee that the solution we
+the systems and AxiSEM3D are both evolving there is no guarantee that the solution we
 found still works now. Nevertheless, the information below may be of some help to
 others.
 
 ## Archer 2 
 
-We can mostly compile AxiSEM-3D using libraries provided on the system. However,
+We can mostly compile AxiSEM3D using libraries provided on the system. However,
 the latest boost is (one minor version) too old so that needs to be downloaded.
 There is also an interesting issue with the naming scheme of metis, which is
 avoided by making a local soft link to the library with a more common name

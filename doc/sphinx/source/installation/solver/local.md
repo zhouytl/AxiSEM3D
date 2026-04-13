@@ -69,7 +69,7 @@ options, which we suggest doing in this order:
 ## Step 2: Configure the Build
 
 
-Nex remove everything in the build folder and tell cmake that each of
+Next remove everything in the build folder and tell cmake that each of
 the dependencies can be found at the CONDA_PREFIX.
 
 ```bash
