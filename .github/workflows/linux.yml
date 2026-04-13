@@ -55,3 +55,8 @@ jobs:
           ./tools/indent.sh
           # fail if git shows any changes:
           git diff --exit-code && echo "No changes after indenting." || exit 1
+
+      - name: test mesher
+        run: |
+          source $CONDA/etc/profile.d/conda.sh && conda activate axisem3d
+          python -m salvus_mesh_lite.interface AxiSEM
