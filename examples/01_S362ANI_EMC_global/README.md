@@ -15,8 +15,8 @@ python -m salvus_mesh_lite.interface AxiSEM --basic.model prem_ani --basic.perio
 
 To run the simulation, input the following comments:
 ```
-    cp path/to/axisem3d . `
-    mpirun -np 4 ./axisem3d input/
+cp path/to/axisem3d . `
+mpirun -np 4 ./axisem3d input/
 ```
 
 This simulation should take around 35 minutes on 4 cores, and the output will be written to output/ inside this folder.
