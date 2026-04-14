@@ -25,16 +25,8 @@ set(ADDITIONAL_LINK_OPTIONS "${links}")
 
 
 ################## dependencies ##################
-# preferred installation prefix of dependencies
-set(FFTW_ROOT                   ${fftw})
-set(METIS_ROOT                  ${metis})
-set(NETCDF_ROOT                 ${netcdf})
-set(HDF5_ROOT                   ${hdf5})
-
-# use parallel NetCDF
 # parallel NetCDF is supported but not mandatory
-set(USE_PARALLEL_NETCDF         ${par_netcdf})
-
+set(USE_PARALLEL_NETCDF OFF CACHE STRING "If ON, use parallel NetCDF. Optional.")
 
 ################## solver options ##################
 # polynomial order of spectral elements (from 1 to 8)
@@ -67,11 +59,6 @@ endmacro()
 # set default values
 setDefault(ADDITIONAL_CXX_FLAGS        "")
 setDefault(ADDITIONAL_LINK_OPTIONS     "")
-setDefault(FFTW_ROOT                   "<empty>")
-setDefault(METIS_ROOT                  "<empty>")
-setDefault(NETCDF_ROOT                 "<empty>")
-setDefault(HDF5_ROOT                   "<empty>")
-setDefault(USE_PARALLEL_NETCDF         OFF)
 setDefault(NPOL_SEM                    4)
 setDefault(USE_DOUBLE                  OFF)
 
@@ -123,7 +110,7 @@ set(SERIAL_BUILD "${serial}")
 setDefault(SERIAL_BUILD OFF)
 if(SERIAL_BUILD)
   add_definitions(-D_SERIAL_BUILD)
-  set(USE_PARALLEL_NETCDF OFF)
+  set(USE_PARALLEL_NETCDF OFF CACHE FORCE)
 endif()
 
 # parallel NetCDF
@@ -164,33 +151,87 @@ set(BOOST_DIR "$ENV{BOOST_DIR}" CACHE PATH "An optional hint to a Boost installa
 find_package(Boost 1.85 REQUIRED HINTS ${BOOST_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 
-# fftw
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
+# FFTW3 (optional prefix: -DFFTW3_DIR= or env FFTW3_DIR; legacy -Dfftw= still accepted)
+set(FFTW3_DIR "$ENV{FFTW3_DIR}" CACHE PATH "Optional hint to an FFTW3 installation prefix")
+if(DEFINED fftw AND NOT "${fftw}" STREQUAL "")
+  set(FFTW3_DIR "${fftw}" CACHE PATH "Optional hint to an FFTW3 installation prefix" FORCE)
+endif()
+find_package(FFTW3 REQUIRED)
+include_directories(${FFTW3_INCLUDE_DIRS})
 
 # metis
-# FindMETIS.cmake uses METIS_DIR instead of METIS_ROOT in HINTS
-set(METIS_DIR "${METIS_ROOT}")
-find_package(METIS REQUIRED)
+set(METIS_DIR "$ENV{METIS_DIR}" CACHE PATH "An optional hint to a METIS installation")
+
+# metis: try CMake package config (some CMake-built installs); fall back to FindMETIS.cmake
+# User prefix is METIS_ROOT (e.g. -Dmetis=$CONDA_PREFIX). Do not pre-set METIS_DIR: CMake sets
+# METIS_DIR from find_package(METIS CONFIG) and may leave METIS_DIR-NOTFOUND on failure, which
+# would break FindMETIS.cmake unless we override before the MODULE search.
+set(METIS_DIR_BACKUP "${METIS_DIR}")
+find_package(METIS QUIET CONFIG HINTS "${METIS_DIR}" PATHS "${METIS_DIR}" "$ENV{METIS_DIR}")
+if(NOT METIS_FOUND)
+  message(STATUS "METIS CMake package not found; using FindMETIS.cmake fallback...")
+  set(METIS_DIR "${METIS_DIR_BACKUP}" CACHE PATH "" FORCE)
+  # MODULE mode does not accept HINTS/PATHS (CMake 4+); hints are via METIS_DIR cache above.
+  find_package(METIS REQUIRED MODULE)
+endif()
+# Map config-package names to METIS_* used below (FindMETIS.cmake sets these directly).
+if(NOT METIS_INCLUDE_DIRS)
+  if(METIS_INCLUDE_DIR)
+    set(METIS_INCLUDE_DIRS "${METIS_INCLUDE_DIR}")
+  elseif(TARGET METIS::metis)
+    get_target_property(_metis_iface_includes METIS::metis INTERFACE_INCLUDE_DIRECTORIES)
+    if(_metis_iface_includes AND NOT _metis_iface_includes MATCHES "-NOTFOUND$")
+      set(METIS_INCLUDE_DIRS "${_metis_iface_includes}")
+    endif()
+  endif()
+endif()
+if(NOT METIS_LIBRARIES)
+  if(TARGET METIS::metis)
+    set(METIS_LIBRARIES METIS::metis)
+  elseif(METIS_LIBRARY)
+    set(METIS_LIBRARIES "${METIS_LIBRARY}")
+  endif()
+endif()
 include_directories(${METIS_INCLUDE_DIRS})
 
-# NetCDF
-find_package(NetCDF REQUIRED)
+# NetCDF: try CMake package config first (conda, CMake-built installs); fall back to FindNetCDF.cmake
+# for typical autotools installs without netCDFConfig.cmake.
+set(NETCDF_DIR "" CACHE PATH "An optional hint to a NetCDF installation")
+find_package(netCDF QUIET CONFIG HINTS "$ENV{NETCDF_DIR}" "${NETCDF_DIR}" PATHS "${NETCDF_DIR}")
+if(NOT netCDF_FOUND)
+  message(STATUS "NetCDF CMake package not found; using FindNetCDF.cmake fallback...")
+  find_package(NetCDF REQUIRED MODULE)
+endif()
+# Map config-package names to NETCDF_* used below (FindNetCDF.cmake sets NETCDF_* directly).
+if(NOT NETCDF_INCLUDES AND netCDF_INCLUDE_DIR)
+  set(NETCDF_INCLUDES "${netCDF_INCLUDE_DIR}")
+endif()
+if(NOT NETCDF_LIBRARIES AND netCDF_LIBRARIES)
+  set(NETCDF_LIBRARIES "${netCDF_LIBRARIES}")
+endif()
 include_directories(${NETCDF_INCLUDES})
+
 # check parallel
 if(USE_PARALLEL_NETCDF)
   if(NOT EXISTS "${NETCDF_INCLUDES}/netcdf_par.h")
     message(FATAL_ERROR "\nMissing header netcdf_par.h under ${NETCDF_INCLUDES}/.\
 \nUse a NetCDF build with parallel support or disable parallel NetCDF by \
--Dpar_netcdf=false.")
+-DUSE_PARALLEL_NETCDF=OFF.")
   endif()
 endif()
 
 # hdf5
-if(NOT HDF5_ROOT STREQUAL "")
-  find_package(HDF5 REQUIRED COMPONENTS C HL)
+set(WITH_HDF5 ON CACHE BOOL "Build with HDF5 support")
+if(WITH_HDF5)
+  find_package(HDF5 COMPONENTS C HL)
+  if(NOT HDF5_FOUND)
+    message(WARNING "HDF5 not found, building without HDF5 support.")
+    set(WITH_HDF5 OFF CACHE FORCE)
+  else()
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${HDF5_LIBRARY_DIRS})
+  endif()
 endif()
-
 
 ################# include paths #################
 # find all directories containing .hpp
@@ -242,24 +283,16 @@ target_compile_options(axisem3d PRIVATE -Wno-unknown-pragmas)
 
 
 ################# linking #################
-if(NOT HDF5_ROOT STREQUAL "")
-  target_link_libraries(
+target_link_libraries(
     axisem3d
     ${MPI_CXX_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    ${METIS_LIBRARIES}
-    ${NETCDF_LIBRARIES}
-    ${HDF5_HL_LIBRARIES}
-    ${HDF5_LIBRARIES}
-  )
-else()
-  target_link_libraries(
-    axisem3d
-    ${MPI_CXX_LIBRARIES}
-    ${FFTW_LIBRARIES}
+    ${FFTW3_LIBRARIES}
     ${METIS_LIBRARIES}
     ${NETCDF_LIBRARIES}
   )
+
+if(WITH_HDF5)
+  target_link_libraries(axisem3d ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
 endif()
 
 # additional user link options (space-separated string supported)
@@ -425,24 +458,24 @@ message("     * Eigen3")
 msglist("       user-specified root: " "${EIGEN3_DIR}")
 msglist("       found include paths: " "${EIGEN3_INCLUDE_DIR}")
 message("     * Boost")
-msglist("       user-specified root: " "${BOOST_ROOT}")
+msglist("       user-specified root: " "${BOOST_DIR}")
 msglist("       found include paths: " "${Boost_INCLUDE_DIRS}")
 message("     * FFTW3")
-msglist("       user-specified root: " "${FFTW_ROOT}")
-msglist("       found include paths: " "${FFTW_INCLUDES}")
-msglist("       linked to libraries: " "${FFTW_LIBRARIES}")
+msglist("       user-specified root: " "${FFTW3_DIR}")
+msglist("       found include paths: " "${FFTW3_INCLUDE_DIRS}")
+msglist("       linked to libraries: " "${FFTW3_LIBRARIES}")
 message("     * METIS")
-msglist("       user-specified root: " "${METIS_ROOT}")
+msglist("       user-specified root: " "${METIS_DIR}")
 msglist("       found include paths: " "${METIS_INCLUDE_DIRS}")
 msglist("       linked to libraries: " "${METIS_LIBRARIES}")
 message("     * NetCDF")
-msglist("       user-specified root: " "${NETCDF_ROOT}")
+msglist("       user-specified root: " "${NETCDF_DIR}")
 msglist("       found include paths: " "${NETCDF_INCLUDES}")
 msglist("       linked to libraries: " "${NETCDF_LIBRARIES}")
 msglist("       use parallel NetCDF: " "${USE_PARALLEL_NETCDF}")
-message("     * HDF5")
-if(NOT DEFINED hdf5)
-message("       Linking to HDF5 is disabled by omitting -Dhdf5.")
+message("     * HDF5 (${WITH_HDF5})")
+if(NOT WITH_HDF5)
+message("       Linking to HDF5 is disabled.")
 else()
 msglist("       user-specified root: " "${HDF5_ROOT}")
 if("${HDF5_LIBRARIES}" STREQUAL "")

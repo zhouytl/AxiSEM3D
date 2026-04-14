@@ -26,12 +26,7 @@ conda activate axisem3d
 Configure the build:
 
 ```bash
-rm -rf build && cmake -B build \
-  -Dcxx=mpicxx \
-  -Dhdf5=$CONDA_PREFIX \
-  -Dnetcdf=$CONDA_PREFIX \
-  -Dfftw=$CONDA_PREFIX \
-  -Dmetis=$CONDA_PREFIX
+rm -rf build && cmake -B build
 ```
 
 Compile and link:

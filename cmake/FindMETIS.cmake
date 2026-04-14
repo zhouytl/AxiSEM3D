@@ -46,13 +46,6 @@
 # (To distribute this file outside of Morse, substitute the full
 #  License text for the above reference.)
 
-if (NOT METIS_FOUND)
-  set(METIS_DIR "" CACHE PATH "Installation directory of METIS library")
-  if (NOT METIS_FIND_QUIETLY)
-    message(STATUS "A cache variable, namely METIS_DIR, has been set to specify the install directory of METIS")
-  endif()
-endif()
-
 # Looking for include
 # -------------------
 
@@ -99,7 +92,7 @@ else()
     set(METIS_metis.h_DIRS "METIS_metis.h_DIRS-NOTFOUND")
     find_path(METIS_metis.h_DIRS
       NAMES metis.h
-      HINTS ${METIS_DIR}
+      HINTS ${METIS_DIR} $ENV{METIS_DIR}
       PATH_SUFFIXES "include" "include/metis")
   else()
     set(METIS_metis.h_DIRS "METIS_metis.h_DIRS-NOTFOUND")
