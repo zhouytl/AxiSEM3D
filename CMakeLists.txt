@@ -28,13 +28,9 @@ set(ADDITIONAL_LINK_OPTIONS "${links}")
 # preferred installation prefix of dependencies
 set(FFTW_ROOT                   ${fftw})
 set(METIS_ROOT                  ${metis})
-set(NETCDF_ROOT                 ${netcdf})
-set(HDF5_ROOT                   ${hdf5})
 
-# use parallel NetCDF
 # parallel NetCDF is supported but not mandatory
-set(USE_PARALLEL_NETCDF         ${par_netcdf})
-
+set(USE_PARALLEL_NETCDF OFF CACHE STRING "If ON, use parallel NetCDF. Optional.")
 
 ################## solver options ##################
 # polynomial order of spectral elements (from 1 to 8)
@@ -69,9 +65,6 @@ setDefault(ADDITIONAL_CXX_FLAGS        "")
 setDefault(ADDITIONAL_LINK_OPTIONS     "")
 setDefault(FFTW_ROOT                   "<empty>")
 setDefault(METIS_ROOT                  "<empty>")
-setDefault(NETCDF_ROOT                 "<empty>")
-setDefault(HDF5_ROOT                   "<empty>")
-setDefault(USE_PARALLEL_NETCDF         OFF)
 setDefault(NPOL_SEM                    4)
 setDefault(USE_DOUBLE                  OFF)
 
@@ -123,7 +116,7 @@ set(SERIAL_BUILD "${serial}")
 setDefault(SERIAL_BUILD OFF)
 if(SERIAL_BUILD)
   add_definitions(-D_SERIAL_BUILD)
-  set(USE_PARALLEL_NETCDF OFF)
+  set(USE_PARALLEL_NETCDF OFF CACHE FORCE)
 endif()
 
 # parallel NetCDF
@@ -174,23 +167,44 @@ set(METIS_DIR "${METIS_ROOT}")
 find_package(METIS REQUIRED)
 include_directories(${METIS_INCLUDE_DIRS})
 
-# NetCDF
-find_package(NetCDF REQUIRED)
+# NetCDF: try CMake package config first (conda, CMake-built installs); fall back to FindNetCDF.cmake
+# for typical autotools installs without netCDFConfig.cmake.
+set(NETCDF_DIR "" CACHE PATH "An optional hint to a NetCDF installation")
+find_package(netCDF QUIET CONFIG HINTS "$ENV{NETCDF_DIR}" "${NETCDF_DIR}" PATHS "${NETCDF_DIR}")
+if(NOT netCDF_FOUND)
+  message(STATUS "NetCDF CMake package not found; using FindNetCDF.cmake fallback...")
+  find_package(NetCDF REQUIRED MODULE)
+endif()
+# Map config-package names to NETCDF_* used below (FindNetCDF.cmake sets NETCDF_* directly).
+if(NOT NETCDF_INCLUDES AND netCDF_INCLUDE_DIR)
+  set(NETCDF_INCLUDES "${netCDF_INCLUDE_DIR}")
+endif()
+if(NOT NETCDF_LIBRARIES AND netCDF_LIBRARIES)
+  set(NETCDF_LIBRARIES "${netCDF_LIBRARIES}")
+endif()
 include_directories(${NETCDF_INCLUDES})
+
 # check parallel
 if(USE_PARALLEL_NETCDF)
   if(NOT EXISTS "${NETCDF_INCLUDES}/netcdf_par.h")
     message(FATAL_ERROR "\nMissing header netcdf_par.h under ${NETCDF_INCLUDES}/.\
 \nUse a NetCDF build with parallel support or disable parallel NetCDF by \
--Dpar_netcdf=false.")
+-DUSE_PARALLEL_NETCDF=OFF.")
   endif()
 endif()
 
 # hdf5
-if(NOT HDF5_ROOT STREQUAL "")
-  find_package(HDF5 REQUIRED COMPONENTS C HL)
+set(WITH_HDF5 ON CACHE BOOL "Build with HDF5 support")
+if(WITH_HDF5)
+  find_package(HDF5 COMPONENTS C HL)
+  if(NOT HDF5_FOUND)
+    message(WARNING "HDF5 not found, building without HDF5 support.")
+    set(WITH_HDF5 OFF CACHE FORCE)
+  else()
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${HDF5_LIBRARY_DIRS})
+  endif()
 endif()
-
 
 ################# include paths #################
 # find all directories containing .hpp
@@ -242,24 +256,16 @@ target_compile_options(axisem3d PRIVATE -Wno-unknown-pragmas)
 
 
 ################# linking #################
-if(NOT HDF5_ROOT STREQUAL "")
-  target_link_libraries(
-    axisem3d
-    ${MPI_CXX_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    ${METIS_LIBRARIES}
-    ${NETCDF_LIBRARIES}
-    ${HDF5_HL_LIBRARIES}
-    ${HDF5_LIBRARIES}
-  )
-else()
-  target_link_libraries(
+target_link_libraries(
     axisem3d
     ${MPI_CXX_LIBRARIES}
     ${FFTW_LIBRARIES}
     ${METIS_LIBRARIES}
     ${NETCDF_LIBRARIES}
   )
+
+if(WITH_HDF5)
+  target_link_libraries(axisem3d ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
 endif()
 
 # additional user link options (space-separated string supported)
@@ -440,9 +446,9 @@ msglist("       user-specified root: " "${NETCDF_ROOT}")
 msglist("       found include paths: " "${NETCDF_INCLUDES}")
 msglist("       linked to libraries: " "${NETCDF_LIBRARIES}")
 msglist("       use parallel NetCDF: " "${USE_PARALLEL_NETCDF}")
-message("     * HDF5")
-if(NOT DEFINED hdf5)
-message("       Linking to HDF5 is disabled by omitting -Dhdf5.")
+message("     * HDF5 (${WITH_HDF5})")
+if(NOT WITH_HDF5)
+message("       Linking to HDF5 is disabled.")
 else()
 msglist("       user-specified root: " "${HDF5_ROOT}")
 if("${HDF5_LIBRARIES}" STREQUAL "")

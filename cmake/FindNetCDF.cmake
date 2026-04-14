@@ -25,20 +25,15 @@
 #  target_link_libraries (uses_f90_interface ${NETCDF_LIBRARIES})
 #  target_link_libraries (only_uses_c_interface ${NETCDF_LIBRARIES_C})
 
-if (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
-  # Already in cache, be silent
-  set (NETCDF_FIND_QUIETLY TRUE)
-endif (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
-
 find_path (NETCDF_INCLUDES netcdf.h
-  HINTS "${NETCDF_ROOT}/include" "$ENV{NETCDF_ROOT}/include")
+  HINTS "${NETCDF_DIR}/include" "$ENV{NETCDF_DIR}/include")
 
 string(REGEX REPLACE "/include/?$" "/lib"
   NETCDF_LIB_HINT ${NETCDF_INCLUDES})
 
 find_library (NETCDF_LIBRARIES_C
   NAMES netcdf
-  HINTS ${NETCDF_LIB_HINT})
+  HINTS "${NETCDF_DIR}/lib" "$ENV{NETCDF_DIR}/lib" ${NETCDF_LIB_HINT})
 mark_as_advanced(NETCDF_LIBRARIES_C)
 
 if ((NOT NETCDF_LIBRARIES_C) OR (NOT NETCDF_INCLUDES))
