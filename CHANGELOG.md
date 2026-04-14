@@ -12,6 +12,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+- Various documentation and examples fixes [various authors; 2026-04-14]
+- Updated salvusmesh lite location and install it [Timo Heister, Jarett Baker-Dunn; 2026-04-14; #195]
+- Automatic CMake detection of dependencies without having to set path [Timo Heister; 2026-04-14; #205]
+- Integration tests [Timo Heister;2026-04-10; #164]
 - Implemented the changelog format [Timo Heister; 2026-02-19; #88]
 
 ## [1.0.0] - 2020-07-09
