@@ -127,7 +127,8 @@ class NetCDF_Writer {
       const Container& val,
       const std::vector<numerical::Int>& starts,
       const std::vector<numerical::Int>& counts) const {
-    // sizeof(numerical::Int) = sizeof(size_t), cast directly
+    static_assert(sizeof(numerical::Int) == sizeof(size_t),
+        "numerical::Int must be size_t to cast directly.");
     if (nc_put_vara(mPWD, varid, (size_t*)starts.data(), (size_t*)counts.data(), val.data()) !=
         NC_NOERR) {
       throw std::runtime_error("NetCDF_Writer::writeVariable || "
