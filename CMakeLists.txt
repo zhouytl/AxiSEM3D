@@ -25,9 +25,6 @@ set(ADDITIONAL_LINK_OPTIONS "${links}")
 
 
 ################## dependencies ##################
-# preferred installation prefix of dependencies
-set(FFTW_ROOT                   ${fftw})
-
 # parallel NetCDF is supported but not mandatory
 set(USE_PARALLEL_NETCDF OFF CACHE STRING "If ON, use parallel NetCDF. Optional.")
 
@@ -62,7 +59,6 @@ endmacro()
 # set default values
 setDefault(ADDITIONAL_CXX_FLAGS        "")
 setDefault(ADDITIONAL_LINK_OPTIONS     "")
-setDefault(FFTW_ROOT                   "<empty>")
 setDefault(NPOL_SEM                    4)
 setDefault(USE_DOUBLE                  OFF)
 
@@ -155,9 +151,13 @@ set(BOOST_DIR "$ENV{BOOST_DIR}" CACHE PATH "An optional hint to a Boost installa
 find_package(Boost 1.85 REQUIRED HINTS ${BOOST_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 
-# fftw
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
+# FFTW3 (optional prefix: -DFFTW3_DIR= or env FFTW3_DIR; legacy -Dfftw= still accepted)
+set(FFTW3_DIR "$ENV{FFTW3_DIR}" CACHE PATH "Optional hint to an FFTW3 installation prefix")
+if(DEFINED fftw AND NOT "${fftw}" STREQUAL "")
+  set(FFTW3_DIR "${fftw}" CACHE PATH "Optional hint to an FFTW3 installation prefix" FORCE)
+endif()
+find_package(FFTW3 REQUIRED)
+include_directories(${FFTW3_INCLUDE_DIRS})
 
 # metis
 set(METIS_DIR "$ENV{METIS_DIR}" CACHE PATH "An optional hint to a METIS installation")
@@ -286,7 +286,7 @@ target_compile_options(axisem3d PRIVATE -Wno-unknown-pragmas)
 target_link_libraries(
     axisem3d
     ${MPI_CXX_LIBRARIES}
-    ${FFTW_LIBRARIES}
+    ${FFTW3_LIBRARIES}
     ${METIS_LIBRARIES}
     ${NETCDF_LIBRARIES}
   )
@@ -461,9 +461,9 @@ message("     * Boost")
 msglist("       user-specified root: " "${BOOST_DIR}")
 msglist("       found include paths: " "${Boost_INCLUDE_DIRS}")
 message("     * FFTW3")
-msglist("       user-specified root: " "${FFTW_ROOT}")
-msglist("       found include paths: " "${FFTW_INCLUDES}")
-msglist("       linked to libraries: " "${FFTW_LIBRARIES}")
+msglist("       user-specified root: " "${FFTW3_DIR}")
+msglist("       found include paths: " "${FFTW3_INCLUDE_DIRS}")
+msglist("       linked to libraries: " "${FFTW3_LIBRARIES}")
 message("     * METIS")
 msglist("       user-specified root: " "${METIS_DIR}")
 msglist("       found include paths: " "${METIS_INCLUDE_DIRS}")
